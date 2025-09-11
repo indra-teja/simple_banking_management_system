@@ -1,7 +1,7 @@
 # simple_banking_management_system
 A simple banking management system project using python and SQL 
 
-## 🚀 Features
+##  Features
 
 - Create new bank accounts
 - Deposit and withdraw money
@@ -11,7 +11,7 @@ A simple banking management system project using python and SQL
 - Account Transfer
 - And Some more
 
-## 🛠️ Technologies Used
+## 🛠 Technologies Used
 
 - Programming Language: Python
 - Database: MySQL
