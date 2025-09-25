@@ -1,3 +1,4 @@
+from colorama import Fore, Back, Style, init
 import mysql.connector as db
 from tabulate import tabulate as tab
 from datetime import datetime
@@ -14,17 +15,17 @@ def register_user():
     while True: # Loop for name input
         name = input("Enter Name: ")
         if name.replace(" ", "").isalpha():
-            print("✅ Name accepted:", name)
+            print(Fore.GREEN + "✅ Name accepted:", name)
             break
         else:
-            print("❌ Invalid NAME. Please enter a valid Name (only alphabets allowed).")
+            print(Fore.RED + "❌ Invalid NAME. Please enter a valid Name (only alphabets allowed).")
 
     while True: # Loop for PIN input
         pin = input("Enter 4-digit PIN (must be exactly 4 digits): ")
         if len(pin) == 4 and pin.isdigit():
             break
         else:
-            print("❌ Invalid PIN. Please enter exactly 4 digits.")
+            print(Fore.RED + "❌ Invalid PIN. Please enter exactly 4 digits.")
 
     while True:
         valid_account_types = ["Saving", "Current"]
@@ -32,7 +33,7 @@ def register_user():
         if account_type in valid_account_types:
             break
         else:
-            print("❌ Invalid input. Please enter either 'Saving' or 'Current'.")
+            print(Fore.RED + "❌ Invalid input. Please enter either 'Saving' or 'Current'.")
 
     while True: # Loop for phone number input and validation
         ph_no = input("Enter your phone number (10 digits, must start with 6/7/8/9): ")
@@ -41,11 +42,11 @@ def register_user():
             data = cursor.fetchone()
 
             if data:
-                print("❌ This phone number is already registered. Please enter a different number.")
+                print(Fore.RED + "❌ This phone number is already registered. Please enter a different number.")
             else:
                 break
         else:
-            print("❌ Invalid phone number. Please enter a valid 10-digit number starting with 6, 7, 8, or 9.")
+            print(Fore.RED + "❌ Invalid phone number. Please enter a valid 10-digit number starting with 6, 7, 8, or 9.")
     while True: # Loop for initial deposit amount
         balance = input("Enter the Initial Deposit Amount : ")
         if balance.isdigit():
@@ -73,7 +74,7 @@ def register_user():
     bal = cursor.fetchone()
     cursor.execute("INSERT INTO transactions (transaction_id, account_no, transaction_type, transaction_amount,Available_balance)\
                                 VALUES (%s, %s, %s, %s, %s)",(txn_id,account_no,'Credit',balance,bal[0]))
-    print("Registration Successful! Your Account No:", account_no)
+    print(Fore.GREEN + "Registration Successful! Your Account No:", account_no)
 
 def user_login():
     global acc_no
@@ -84,7 +85,7 @@ def user_login():
         data = cursor.fetchone()
 
         if not data:
-            print("❌ No account found with that number.")
+            print(Fore.RED + "❌ No account found with that number.")
             choice = input("Do you want to open a new account? (Yes/No): ").lower()
             if choice == "yes":
                 register_user()
@@ -92,27 +93,27 @@ def user_login():
                 print("Okk Tq")
             return   # stop login if no account
         
-        print("✅ Account found!")
+        print(Fore.GREEN + "✅ Account found!")
 
         # Step 2: PIN input
         pin_input = input("Enter your 4-digit PIN : ").strip()
         if not (pin_input.isdigit() and len(pin_input) == 4):
-            print("❌ PIN must be exactly 4 digits (numbers only).")
+            print(Fore.RED + "❌ PIN must be exactly 4 digits (numbers only).")
             return
 
         cursor.execute("SELECT * FROM user WHERE account_no = %s AND pin = %s", (acc_no, pin_input))
         user = cursor.fetchone()
 
         if user:
-            print(f"✅ Welcome {user[1]}!") # Assuming user[1] is the name
+            print(Fore.GREEN + f"✅ Welcome {user[1]}!") # Assuming user[1] is the name
             user_functions()
         else:
-            print("❌ Invalid Credentials. Please check the details you entered.")
+            print(Fore.RED + "❌ Invalid Credentials. Please check the details you entered.")
 
     except ValueError:
-        print("❌ Invalid input. Account number must contain only digits.")
+        print(Fore.RED + "❌ Invalid input. Account number must contain only digits.")
     except Exception as e:
-        print("⚠️ Unexpected error occurred:", e)
+        print(Fore.YELLOW + "⚠️ Unexpected error occurred:", e)
 
 def user_functions():
     while True:
@@ -136,7 +137,7 @@ def user_functions():
             if row:
                 print(tab([row], headers=headers, tablefmt="fancy_grid"))
             else:
-                print("No record found.")
+                print(Fore.RED + "No record found.")
 
             conn.commit()
         elif choice == "2": # Balance Check
@@ -146,7 +147,7 @@ def user_functions():
             if data:
                 print(tab([data],headers=headers,tablefmt="fancy_grid"))
             else:
-                print("No Record Found")
+                print(Fore.RED + "No Record Found")
             conn.commit()
         elif choice == "3":  # Pin change
             attempts = 3  
@@ -159,28 +160,28 @@ def user_functions():
                     while True:
                         new_pin = input("Enter new pin (4 digits): ")
                         if len(new_pin) != 4 or not new_pin.isdigit():
-                            print("❌ PIN must be exactly 4 digits (only numbers). Try again.")
+                            print(Fore.RED + "❌ PIN must be exactly 4 digits (only numbers). Try again.")
                             continue
                         if new_pin == pin:
-                            print("⚠️ New PIN cannot be the same as the old PIN.")
+                            print(Fore.YELLOW + "⚠️ New PIN cannot be the same as the old PIN.")
                             continue
 
                         confirm_pin = input("Confirm new pin: ")
                         if new_pin != confirm_pin:
-                            print("❌ PINs do not match. Please try again.")
+                            print(Fore.RED + "❌ PINs do not match. Please try again.")
                             continue
 
                         cursor.execute("UPDATE user SET pin = %s WHERE account_no = %s", (new_pin, acc_no))
                         conn.commit()
-                        print("✅ PIN successfully updated. Please login again.")
-                        print("Please Go Back and Re-login.⬅️↩️")
+                        print(Fore.GREEN + "✅ PIN successfully updated. Please login again.")
+                        print(Fore.PINK + "Please Go Back and Re-login.⬅️↩️")
                         logged_in = False
                         return
                 else:
                     attempts -= 1
-                    print(f"❌ Incorrect previous PIN. {attempts} attempt(s) left.")
+                    print(Fore.RED + f"❌ Incorrect previous PIN. {attempts} attempt(s) left.")
 
-            print("❌ Too many incorrect attempts. Returning to menu.")
+            print(Fore.RED + "❌ Too many incorrect attempts. Returning to menu.")
 
 
         elif choice == "4":  # Credit amount
@@ -211,16 +212,16 @@ def user_functions():
                         headers = [desc[0] for desc in cursor.description]
 
                         if row:
-                            print("✅ The amount has been successfully credited. Available balance:")
+                            print(Fore.GREEN + "✅ The amount has been successfully credited. Available balance:")
                             print(tab([row], headers=headers, tablefmt="fancy_grid"))
                         else:
-                            print("⚠️ No record found.")
+                            print(Fore.YELLOW + "⚠️ No record found.")
 
                         break  # Exit the loop after successful credit
                     else:
-                        print("❌ The entered amount must be greater than 0.")
+                        print(Fore.RED + "❌ The entered amount must be greater than 0.")
                 else:
-                    print("❌ Invalid input. Please enter a positive numeric amount.") # Error for non-numeric input
+                    print(Fore.RED + "❌ Invalid input. Please enter a positive numeric amount.") # Error for non-numeric input
 
         elif choice == "5":  # Debit
             while True:
@@ -242,48 +243,48 @@ def user_functions():
                                     VALUES (%s, %s, %s, %s, %s)
                                 """, (txn_id, acc_no, 'Debit', deb_amnt, new_balance))
                                 conn.commit()
-                                print("✅ The amount has been debited successfully.")
-                                print("💰 Your current balance is:")
+                                print(Fore.GREEN + "✅ The amount has been debited successfully.")
+                                print(Fore.MAGENTA + "💰 Your current balance is:")
                                 print(tab([[new_balance]], headers=['Balance'], tablefmt="fancy_grid"))
                                 break  # Exit loop after successful debit 
                             else:
-                                print("❌ Insufficient balance.")
-                                print(f"💡 Your current balance is: ₹{current_balance}")
+                                print(Fore.RED + "❌ Insufficient balance.")
+                                print(Fore.CYAN + f"💡 Your current balance is: ₹{current_balance}")
                         else:
-                            print("❌ Account not found.")
+                            print(Fore.RED + "❌ Account not found.")
                             break
                     else:
-                        print("❌ Please enter an amount greater than 0.")
+                        print(Fore.RED + "❌ Please enter an amount greater than 0.")
                 else:
-                    print("❌ Invalid input. Please enter a numeric amount.")
+                    print(Fore.RED + "❌ Invalid input. Please enter a numeric amount.")
         
         elif choice == "6":  # Account Transfer
             while True:
                 target_input = input("Enter the account number to transfer the amount (or type 'cancel' to go back): ")
                 if target_input.lower() == 'cancel':
-                    print("⚠️ Transfer cancelled.")
+                    print(Fore.RED + "⚠️ Transfer cancelled.")
                     break
                 if not target_input.isdigit():
-                    print("❌ Invalid input. Account number must contain only digits.")
+                    print(Fore.RED + "❌ Invalid input. Account number must contain only digits.")
                     continue
 
                 target_account = int(target_input)
 
                 if target_account == acc_no:
-                    print("❌ Cannot transfer to your own account.")
+                    print(Fore.RED + "❌ Cannot transfer to your own account.")
                     continue
 
                 # Check if the target account exists
                 cursor.execute("SELECT account_no FROM user WHERE account_no = %s", (target_account,))
                 acc = cursor.fetchone()
                 if not acc:
-                    print("❌ Target account does not exist.")
+                    print(Fore.RED + "❌ Target account does not exist.")
                     continue
 
                 # Ask for the transfer amount
                 amount_input = input("Enter amount to transfer: ")
                 if not amount_input.isdigit() or int(amount_input) <= 0:
-                    print("❌ Invalid amount. Please enter a positive number.")
+                    print(Fore.RED + "❌ Invalid amount. Please enter a positive number.")
                     continue
 
                 amount = int(amount_input)
@@ -292,12 +293,12 @@ def user_functions():
                 cursor.execute("SELECT balance FROM user WHERE account_no = %s", (acc_no,))
                 sender_row = cursor.fetchone()
                 if not sender_row:
-                    print("❌ Your account could not be found.")
+                    print(Fore.RED + "❌ Your account could not be found.")
                     break
 
                 sender_bal = sender_row[0]
                 if sender_bal < amount:
-                    print("❌ Insufficient balance to transfer.")
+                    print(Fore.RED + "❌ Insufficient balance to transfer.")
                     continue
 
                 # Generate unique transaction IDs
@@ -328,8 +329,8 @@ def user_functions():
                 # Commit transaction
                 conn.commit()
 
-                print("✅ Transfer successful.")
-                print(f"💰 Your new balance: {new_sender_bal}")
+                print(Fore.GREEN + "✅ Transfer successful.")
+                print(Fore.MAGENTA + f"💰 Your new balance: {new_sender_bal}")
                 headers = ['Available Balance']
                 print(tab([[new_sender_bal]], headers=headers, tablefmt="fancy_grid"))
                 break
@@ -344,27 +345,27 @@ def user_functions():
         elif choice=="8":
             break
         elif choice.isalpha():
-            print("Please check the choice you have entered.")
+            print(Fore.BLUE + "Please check the choice you have entered.")
         else:
-            print("Please choose the correct details from the above choice.")
+            print(Fore.RED + "Please choose the correct details from the above choice.")
 
 def admin_login():
     user_name = input("Enter your username: ").strip()
     password = input("Enter your password: ").strip()
     if not user_name or not password:
-        print("❌ Username and password cannot be empty.")
+        print(Fore.RED + "❌ Username and password cannot be empty.")
         return False
     try:
         cursor.execute("SELECT * FROM admin WHERE username=%s AND password=%s", (user_name, password))
         data = cursor.fetchone()
         if data:
-            print("✅ You have successfully logged in as admin.")
+            print(Fore.GREEN + "✅ You have successfully logged in as admin.")
             admin_menu()  # Call the menu function after successful login
             return True # Indicate successful login
         else:
-            print("❌ Invalid username or password.")
+            print(Fore.RED + "❌ Invalid username or password.")
     except Exception as e:
-        print(f"⚠️ Error during login: {e}") # Handle database or other errors
+        print(Fore.YELLOW + f"⚠️ Error during login: {e}") # Handle database or other errors
     return False # Indicate failed login
 
 def admin_menu():
@@ -403,12 +404,12 @@ def admin_menu():
                             print(tab([data], headers=headers, tablefmt="fancy_grid"))
                             break  # Exit the loop after showing the account details
                         else:
-                            print("\nNo user found in our logs. Please try again.")
+                            print(Fore.LIGHTCYAN_EX + "\nNo user found in our logs. Please try again.")
                     else:
-                        print("Invalid input! Please enter a valid account number containing only digits.")
+                        print(Fore.RED + "Invalid input! Please enter a valid account number containing only digits.")
                     attempts -= 1
                 if attempts == 0:
-                    print("You've exceeded the maximum number of attempts. Please try again later.")
+                    print(Fore.BLUE + "You've exceeded the maximum number of attempts. Please try again later.")
                 conn.commit()
 
             elif choice == "3":  # particular transaction of a user
@@ -423,10 +424,10 @@ def admin_menu():
                             print(tab(data, headers=headers, tablefmt="fancy_grid"))
                             break  
                         else:
-                            print("\nNo transactions found for this account. Please check the account number.")
+                            print(Fore.RED + "\nNo transactions found for this account. Please check the account number.")
                             break  
                     else:
-                        print("Invalid input! Please enter a valid account number containing only digits.")
+                        print(Fore.RED + "Invalid input! Please enter a valid account number containing only digits.")
                 conn.commit()
 
             elif choice == "4":  # view transaction of a particular day
@@ -444,9 +445,9 @@ def admin_menu():
                                 headers = ['Transaction_id', 'account_no', 'transaction_type', 'transaction_amount', 'transaction_time']
                                 print(tab(data, headers=headers, tablefmt="fancy_grid"))
                             else:
-                                print("No transactions found for this date.\n")
+                                print(Fore.YELLOW + "No transactions found for this date.\n")
                         except ValueError:
-                            print("Invalid date format! Please enter the date in the format YYYY-MM-DD.\n")
+                            print(Fore.RED + "Invalid date format! Please enter the date in the format YYYY-MM-DD.\n")
                         conn.commit()
                     elif ch == "2":
                         acc_no_input = input("Enter the user account number to check: ")
@@ -461,16 +462,16 @@ def admin_menu():
                                     headers = ['Transaction_id', 'account_no', 'transaction_type', 'transaction_amount', 'transaction_time']
                                     print(tab(data, headers=headers, tablefmt="fancy_grid"))
                                 else:
-                                    print("No transactions found for this account on the specified date.\n")
+                                    print(Fore.YELLOW + "No transactions found for this account on the specified date.\n")
                             except ValueError:
-                                print("Invalid date format! Please enter the date in the format YYYY-MM-DD.\n")
+                                print(Fore.RED + "Invalid date format! Please enter the date in the format YYYY-MM-DD.\n")
                             conn.commit()
                         else:
-                            print("Invalid account number! Please enter a valid account number containing only digits.\n")
+                            print(Fore.RED + "Invalid account number! Please enter a valid account number containing only digits.\n")
                     elif ch == "3":
                         break
                     else:
-                        print("Invalid choice! Please select a valid option from the menu.\n")
+                        print(Fore.RED + "Invalid choice! Please select a valid option from the menu.\n")
 
             elif choice == "5":  # Credit amount into a particular account
                 while True:
@@ -495,18 +496,18 @@ def admin_menu():
                                     VALUES (%s, %s, %s, %s, %s)
                                 """, (txn_id, acc_no, 'Credit', amount, new_balance))
                                 conn.commit()
-                                print("✅ The amount is successfully credited into the account.")
-                                print(f"💰 The available balance is: {new_balance}")
+                                print(Fore.GREEN + "✅ The amount is successfully credited into the account.")
+                                print(Fore.CYAN + f"💰 The available balance is: {new_balance}")
                                 headers = ['Available Balance'] # Headers for balance display
                                 print(tab([[new_balance]], headers=headers, tablefmt="fancy_grid"))
                                 break  # Exit the loop after successful transaction  
                             else:
-                                print("❌ Invalid amount. Please enter a valid positive number.")
+                                print(Fore.RED + "❌ Invalid amount. Please enter a valid positive number.")
                         else:
-                            print("❌ Invalid account number, please check again.")
+                            print(Fore.RED + "❌ Invalid account number, please check again.")
                             break  # Exit if account is invalid
                     else:
-                        print("❌ Invalid account number. Please enter a valid numeric account number.")
+                        print(Fore.RED + "❌ Invalid account number. Please enter a valid numeric account number.")
                         break  # Exit if account number is invalid
 
             elif choice == "6":  # Debit amount from a particular account
@@ -531,23 +532,23 @@ def admin_menu():
                                         VALUES (%s, %s, %s, %s, %s)
                                     """, (txn_id, acc_no, 'Debit', amount, new_balance))
                                     conn.commit()
-                                    print("✅ The amount has been debited successfully from your account.")
-                                    print(f"💰 The available balance is: {new_balance}")
+                                    print(Fore.GREEN + "✅ The amount has been debited successfully from your account.")
+                                    print(Fore.CYAN + f"💰 The available balance is: {new_balance}")
                                     headers = ['Available Balance'] # Headers for balance display
                                     print(tab([[new_balance]], headers=headers, tablefmt="fancy_grid"))
                                     break  # Exit after successful transaction
                                 else:
-                                    print("❌ Insufficient balance.")
-                                    print("🔍 The current balance in your account is: ")
-                                    print(f"💰 {bal[0]}")
+                                    print(Fore.RED + "❌ Insufficient balance.")
+                                    print(Fore.YELLOW + "🔍 The current balance in your account is: ")
+                                    print(Fore.CYAN + f"💰 {bal[0]}")
                                     break  # Exit after failure due to insufficient balance
                             else:
-                                print("❌ Invalid amount. Please enter a valid positive number.")
+                                print(Fore.RED + "❌ Invalid amount. Please enter a valid positive number.")
                         else:
-                            print("❌ Invalid account number. Please check again.")
+                            print(Fore.RED + "❌ Invalid account number. Please check again.")
                             break  # Exit if account is invalid
                     else:
-                        print("❌ Invalid account number. Please enter a valid numeric account number.")
+                        print(Fore.RED + "❌ Invalid account number. Please enter a valid numeric account number.")
                         break  # Exit if account number is invalid
             
             elif choice == "7":  # Delete particular account
@@ -570,16 +571,16 @@ def admin_menu():
                                 
                                 # Commit changes
                                 conn.commit()
-                                print(f"✅ Account {acc_no} and all its transactions have been deleted successfully.")
+                                print(Fore.GREEN + f"✅ Account {acc_no} and all its transactions have been deleted successfully.")
                                 break  # Exit the loop after deletion
                             else:
-                                print("❌ Account deletion cancelled.")
+                                print(Fore.RED + "❌ Account deletion cancelled.")
                                 break  # Exit if user cancels deletion
                         else:
-                            print("⚠️ Account number not found! Please check the number and try again.")
+                            print(Fore.YELLOW + "⚠️ Account number not found! Please check the number and try again.")
                             
                     else:
-                        print("❌ Invalid account number. Please enter a valid numeric account number.")
+                        print(Fore.red + "❌ Invalid account number. Please enter a valid numeric account number.")
                     
                     # Optional: Ask if user wants to try again on failure or exit
                     retry = input("Do you want to try again? (yes/no): ").lower()
@@ -589,7 +590,7 @@ def admin_menu():
                 print("Logging off....")
                 break  # Exit loop to log out
             else:
-                print("Please Check the above data and enter it.") # Invalid choice for admin menu
+                print(Fore.RED + "Please Check the above data and enter it.") # Invalid choice for admin menu
             
 
 def main():
@@ -603,12 +604,12 @@ def main():
         elif choice == "3":
             admin_login()
         elif choice == '4':
-            print("Thank You Visit Again.")
+            print(Fore.GREEN + "Thank You Visit Again.")
             break
         elif choice.isalpha():
-            print("Please check the input you have entered.")
+            print(Fore.RED + "Please check the input you have entered.")
         else:
-            print("Please choose the correct details from the above choice.")
+            print(Fore.RED +"Please choose the correct details from the above choice.")
 if __name__ == "__main__":
     main()
 
